@@ -13,23 +13,24 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: ShoppingListScreen(),
+      home: ShoppingListScreenState(),
     );
   }
 }
 
-class ShoppingListScreen extends StatefulWidget {
+
+class ShoppingListScreenState extends StatefulWidget {
   @override
   _ShoppingListScreenState createState() => _ShoppingListScreenState();
 }
 
-class _ShoppingListScreenState extends State<ShoppingListScreen> {
-  List<String> _shoppingItems = [];
-  Set<String> _checkedItems = {};
+class _ShoppingListScreenState extends State<ShoppingListScreenState> {
+  final List<Item> _shoppingItems = [];
+  final Set<Item> _checkedItems = {};
 
-  void _addItem(String item) {
+  void _addItem(String name, double value) {
     setState(() {
-      _shoppingItems.add(item);
+      _shoppingItems.add(Item(name, value));
     });
   }
 
@@ -40,7 +41,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     });
   }
 
-  void _toggleItem(String item) {
+  void _toggleItem(Item item) {
     setState(() {
       if (_checkedItems.contains(item)) {
         _checkedItems.remove(item);
@@ -49,7 +50,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       }
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,7 +59,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       body: ListView(
         children: _shoppingItems.map((item) {
           return ListTile(
-            title: Text(item),
+            title: Text(item.name),
+            subtitle: Text('R\$ ${item.value.toStringAsFixed(2)}'),
             trailing: Checkbox(
               value: _checkedItems.contains(item),
               onChanged: (value) {
@@ -77,13 +78,27 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  String newItem = '';
+                  String newItemName = '';
+                  double newItemValue = 0.0;
                   return AlertDialog(
                     title: const Text('Adicionar Item'),
-                    content: TextField(
-                      onChanged: (value) {
-                        newItem = value;
-                      },
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        TextField(
+                          onChanged: (value) {
+                            newItemName = value;
+                          },
+                          decoration: const InputDecoration(labelText: 'Nome do Item'),
+                        ),
+                        TextField(
+                          onChanged: (value) {
+                            newItemValue = double.tryParse(value) ?? 0.0;
+                          },
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: 'Valor do Item (R\$)'),
+                        ),
+                      ],
                     ),
                     actions: <Widget>[
                       TextButton(
@@ -95,7 +110,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                       TextButton(
                         child: const Text('Adicionar'),
                         onPressed: () {
-                          _addItem(newItem);
+                          _addItem(newItemName, newItemValue);
                           Navigator.of(context).pop();
                         },
                       ),
@@ -107,7 +122,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             tooltip: 'Adicionar Item',
             child: const Icon(Icons.add),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           FloatingActionButton(
             onPressed: () {
               _removeCheckedItems();
@@ -119,4 +134,19 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       ),
     );
   }
+}
+
+class Item {
+  String name;
+  double value;
+
+  Item(this.name, this.value);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Item && runtimeType == other.runtimeType && name == other.name && value == other.value;
+
+  @override
+  int get hashCode => name.hashCode ^ value.hashCode;
 }
