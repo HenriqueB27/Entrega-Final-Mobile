@@ -9,14 +9,7 @@ class ShoppingListScreenState extends StatefulWidget {
 }
 
 class _ShoppingListScreenState extends State<ShoppingListScreenState> {
-  final List<Item> _shoppingItems = [];
   final Set<Item> _checkedItems = {};
-
-  void _addItem(String name, double value) {
-    setState(() {
-      _shoppingItems.add(Item(name, value));
-    });
-  }
 
   void _removeCheckedItems() {
     setState(() {
@@ -53,9 +46,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreenState> {
           children: snapshot.data!.docs.map((DocumentSnapshot document) {
             Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
 
-            print(data);
-            print(document.id);
-            print(document.id.runtimeType);
             Item item = Item.fromMap(data, document.id);
             return ListTile(
               leading: Checkbox(
