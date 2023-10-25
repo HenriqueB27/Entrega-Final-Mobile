@@ -35,44 +35,54 @@ class _ShoppingListScreenState extends State<ShoppingListScreenState> {
       stream: FirebaseFirestore.instance.collection('shopping_list').snapshots(), 
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
-          return const Text('Something went wrong');
+          return const Center(
+            child: Text('Ocorreu um erro ao buscar os dados da lista')
+          );
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text("Loading");
+          return const Center(
+            child: CircularProgressIndicator()
+          );
         }
 
-        return ListView(
-          children: snapshot.data!.docs.map((DocumentSnapshot document) {
-            Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
+        if(snapshot.data == null || snapshot.data!.size == 0){
+          return const Center(
+            child: Text('Não há itens dentro da sua lista de compras'),
+          );
+        } else{
+          return ListView(
+            children: snapshot.data!.docs.map((DocumentSnapshot document) {
+              Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
 
-            Item item = Item.fromMap(data, document.id);
-            return ListTile(
-              leading: Checkbox(
-                value: _checkedItems.contains(item),
-                onChanged: (value) {
-                  _toggleItem(item);
-                },
-              ),
-              title: Text(item.name),
-              subtitle: Text("R\$ ${item.value.toStringAsFixed(2)}"),
-              trailing: IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Editar Item'),
-                        content: ItemFormWidget(item: item)
-                      );
-                    }
-                  );
-                },
-              )
-            );
-          }).toList(),
-        );
+              Item item = Item.fromMap(data, document.id);
+              return ListTile(
+                leading: Checkbox(
+                  value: _checkedItems.contains(item),
+                  onChanged: (value) {
+                    _toggleItem(item);
+                  },
+                ),
+                title: Text(item.name),
+                subtitle: Text("R\$ ${item.value.toStringAsFixed(2)}"),
+                trailing: IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Editar Item'),
+                          content: ItemFormWidget(item: item)
+                        );
+                      }
+                    );
+                  },
+                )
+              );
+            }).toList(),
+          );
+        }
       }
     );
   }

@@ -9,7 +9,7 @@ class ItemFormWidget extends StatelessWidget {
 
   final _formkey = GlobalKey<FormState>();
   late final _nameController = TextEditingController(text: item?.name);
-  late final _valueController = TextEditingController(text: item?.value.toStringAsFixed(2));
+  late final _valueController = TextEditingController(text: item?.value.toString());
 
   void _addItem(Item newItem) async{
     await FirebaseFirestore.instance.collection('shopping_list').add(newItem.toMap());
@@ -45,7 +45,7 @@ class ItemFormWidget extends StatelessWidget {
                   decoration: const InputDecoration(hintText: "Valor", labelText: "Valor do Item (R\$)"),
                   controller: _valueController,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    if (value == null || value.isEmpty || value.startsWith('-')) {
                       return "Valor do Item Inválido!";
                     }
                     return null;
